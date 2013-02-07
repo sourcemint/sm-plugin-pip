@@ -1,0 +1,11 @@
+{
+    "name": "examples-HelloWorld",
+    "version": "0.1.0",
+    "private": true,
+    "mappings": {
+        "my-pip-pkg": ["pip", "./packages/helloworld/dist/helloworld-0.1.0.tar.gz"]
+    },
+    "scripts": {
+    	"run": "node ./main.js"
+    }
+}
