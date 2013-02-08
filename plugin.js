@@ -17,19 +17,30 @@ exports.for = function(API, plugin) {
                 locator.vendor = "pip";
                 locator.id = m[1];
                 locator.selector = m[2];
-
-                locator.getLocation = function(type) {
-                    var locations = {
-                        "status": "http://pypi.python.org/simple/" + this.id + "/",
-                        // Without reading the descriptor this is as close as we can get to the homepage.
-                        "homepage": "http://pypi.python.org/pypi/" + this.id
-                    };
-                    if (this.version) {
-                        locations.gzip = "http://pypi.python.org/packages/source/d/" + this.id + "/" + this.id + "-" + this.version + ".tar.gz";
-                        locations.pointer = locations.gzip;
+            } else
+            // e.g. `http://pypi.python.org/packages/source/d/dotcloud/dotcloud-0.9.4.tar.gz`
+            if((m = locator.descriptor.pointer.match(/pypi.python.org\/packages\/source\/d\/([^\/]*)\/(.*)$/))) {
+                locator.pm = "pip";
+                locator.vendor = "pip";
+                locator.id = m[1];
+                if (m[2].substring(0, m[1].length+1) === (m[1] + "-")) {
+                    if((m = m[2].substring(m[1].length+1).match(/^(.*)\.tar\.gz$/))) {
+                        locator.version = m[1];
                     }
-                    return (type)?locations[type]:locations;
                 }
+            }
+
+            locator.getLocation = function(type) {
+                var locations = {
+                    "status": "http://pypi.python.org/simple/" + this.id + "/",
+                    // Without reading the descriptor this is as close as we can get to the homepage.
+                    "homepage": "http://pypi.python.org/pypi/" + this.id
+                };
+                if (this.version) {
+                    locations.gzip = "http://pypi.python.org/packages/source/d/" + this.id + "/" + this.id + "-" + this.version + ".tar.gz";
+                    locations.pointer = locations.gzip;
+                }
+                return (type)?locations[type]:locations;
             }
         }
 
