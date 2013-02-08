@@ -221,16 +221,19 @@ exports.for = function(API, plugin) {
                                 'SOURCE="${BASH_SOURCE[0]}"',
                                 'while [ -h "$SOURCE" ]; do # resolve $SOURCE until the file is no longer a symlink',
                                 '  DIR="$( cd -P "$( dirname "$SOURCE" )" && pwd )"',
-                                '  LAST_SOURCE=$SOURCE',
                                 '  SOURCE="$(readlink "$SOURCE")"',
                                 '  [[ $SOURCE != /* ]] && SOURCE="$DIR/$SOURCE" # if $SOURCE was a relative symlink, we need to resolve it relative to the path where the symlink file was located',
                                 'done',
                                 'BASE_PATH="$( cd -P "$( dirname "$SOURCE" )" && pwd )"',
                                 "source $BASE_PATH/activate",
-                                alias + ' "$@"'
+                                "$BASE_PATH/" + alias + ' "$@"'
                             ].join("\n"));
                             API.FS.chmodSync(wrapperPath, 0755);
                             setupInfo.bin[alias] = "./bin/" + alias + "~wrapper"
+
+                            var content = API.FS.readFileSync(PATH.join(virtualenvPath, "bin", alias)).toString();
+                            content = content.replace(/^#\!\/.*?\/python/, "#!/usr/bin/env python");
+                            API.FS.writeFileSync(PATH.join(virtualenvPath, "bin", alias), content);
                         }
                     }
 
@@ -242,6 +245,24 @@ exports.for = function(API, plugin) {
                         bin: setupInfo.bin || {}
                     }, null, 4));
 
+                    // Replace some paths to make everything relative.
+                    // TODO: Do this for other standard files as well.
+                    var content = API.FS.readFileSync(PATH.join(virtualenvPath, "bin", "activate")).toString();
+                    content = content.replace(/VIRTUAL_ENV="\/.*?\n/, [
+                        "",
+                        'SOURCE="${BASH_SOURCE[0]}"',
+                        'while [ -h "$SOURCE" ]; do # resolve $SOURCE until the file is no longer a symlink',
+                        '  DIR="$( cd -P "$( dirname "$SOURCE" )" && pwd )"',
+                        '  SOURCE="$(readlink "$SOURCE")"',
+                        '  [[ $SOURCE != /* ]] && SOURCE="$DIR/$SOURCE" # if $SOURCE was a relative symlink, we need to resolve it relative to the path where the symlink file was located',
+                        'done',
+                        'BASE_PATH="$( cd -P "$( dirname "$SOURCE" )" && pwd )"',
+                        'VIRTUAL_ENV=$BASE_PATH/..',
+                        ""
+                    ].join("\n"));
+                    API.FS.writeFileSync(PATH.join(virtualenvPath, "bin", "activate"), content);
+
+                    // Swap out original install cache dir of root package with virtualenv that is now setup.
                     API.FS.removeSync(packagePath);
                     API.FS.renameSync(virtualenvPath, packagePath);
                 });
