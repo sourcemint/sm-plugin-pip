@@ -17,3 +17,4 @@ Links
   * http://pypi.python.org/pypi
   * http://guide.python-distribute.org/pip.html
   * http://guide.python-distribute.org/creation.html
+  * http://guide.python-distribute.org/contributing.html#the-simple-index-protocol
