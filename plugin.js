@@ -11,12 +11,14 @@ exports.for = function(API, plugin) {
 
         if (!locator.version && !locator.selector && locator.descriptor.pointer) {
 
+            var matched = false;
             var m;
             if((m = locator.descriptor.pointer.match(/^([^@]*)@(.*)$/))) {
                 locator.pm = "pip";
                 locator.vendor = "pip";
                 locator.id = m[1];
                 locator.selector = m[2];
+                matched = true;
             } else
             // e.g. `http://pypi.python.org/packages/source/d/dotcloud/dotcloud-0.9.4.tar.gz`
             if((m = locator.descriptor.pointer.match(/pypi.python.org\/packages\/source\/d\/([^\/]*)\/(.*)$/))) {
@@ -28,19 +30,22 @@ exports.for = function(API, plugin) {
                         locator.version = m[1];
                     }
                 }
+                matched = true;
             }
 
-            locator.getLocation = function(type) {
-                var locations = {
-                    "status": "http://pypi.python.org/simple/" + this.id + "/",
-                    // Without reading the descriptor this is as close as we can get to the homepage.
-                    "homepage": "http://pypi.python.org/pypi/" + this.id
-                };
-                if (this.version) {
-                    locations.gzip = "http://pypi.python.org/packages/source/d/" + this.id + "/" + this.id + "-" + this.version + ".tar.gz";
-                    locations.pointer = locations.gzip;
+            if (matched) {
+                locator.getLocation = function(type) {
+                    var locations = {
+                        "status": "http://pypi.python.org/simple/" + this.id + "/",
+                        // Without reading the descriptor this is as close as we can get to the homepage.
+                        "homepage": "http://pypi.python.org/pypi/" + this.id
+                    };
+                    if (this.version) {
+                        locations.gzip = "http://pypi.python.org/packages/source/d/" + this.id + "/" + this.id + "-" + this.version + ".tar.gz";
+                        locations.pointer = locations.gzip;
+                    }
+                    return (type)?locations[type]:locations;
                 }
-                return (type)?locations[type]:locations;
             }
         }
 
