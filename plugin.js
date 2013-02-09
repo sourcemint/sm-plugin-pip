@@ -159,7 +159,7 @@ exports.for = function(API, plugin) {
                 virtualenvPath
             ], opts).then(function() {
                 var easyInstallPath = PATH.resolve(virtualenvPath, "bin/easy_install");
-                if (!PATH.existsSync(easyInstallPath)) {
+                if (!API.FS.existsSync(easyInstallPath)) {
                     throw new Error("virtualenv local 'easy_install' not found at '" + easyInstallPath + "'");
                 }
                 return API.OS.spawnInline(easyInstallPath, [
