@@ -42,6 +42,7 @@ exports.for = function(API, plugin) {
                     };
                     if (this.version) {
                         locations.gzip = "http://pypi.python.org/packages/source/d/" + this.id + "/" + this.id + "-" + this.version + ".tar.gz";
+                        locations.archive = locations.gzip;
                         locations.pointer = locations.gzip;
                     }
                     return (type)?locations[type]:locations;
